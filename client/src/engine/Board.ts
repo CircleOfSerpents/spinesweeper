@@ -49,6 +49,12 @@ export default class Board {
     return _.cloneDeep(this);
   }
 
+  public rightClick(cellIndex: CellIndex): Board {
+    let cell = this.getCell(cellIndex);
+    cell.rightClick();
+    return _.cloneDeep(this);
+  }
+
   /**
    * Calculate the count of the number of adjacent mines in the 8 neighbors of the cell at board[row][column]
    * @param row the row of the cell
@@ -60,6 +66,19 @@ export default class Board {
     return this.getInBoundNeighbors(cellIndex)
       .map((neighbor) => this.isMineCell(neighbor))
       .filter(Boolean).length;
+  }
+
+  /**
+   * Get the current Cell at board[row][column]
+   * @param row the row of the cell
+   * @param column the column of the cell
+   * @returns the Cell at board[row][column]
+   */
+  public getCell(cellIndex: CellIndex): Cell {
+    if (!this.isCellInBounds(cellIndex)) {
+      throw Error("Cell out of bounds");
+    }
+    return this.board[cellIndex.row][cellIndex.column];
   }
 
   /**

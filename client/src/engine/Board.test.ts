@@ -53,6 +53,11 @@ test("getCellNumMineNeighbors returns proper number of neighbors with mines", ()
   expect(board.getCellNumNeighborMines({ row: 9, column: 9 })).toBe(0);
   board.board[8][8].isMine = true;
   expect(board.getCellNumNeighborMines({ row: 9, column: 9 })).toBe(1);
+  board.board[8][9].rightClick();
+  expect(board.getCellNumNeighborMines({ row: 9, column: 9 })).toBe(1);
+  board.board[9][8].rightClick();
+  board.board[9][8].rightClick();
+  expect(board.getCellNumNeighborMines({ row: 9, column: 9 })).toBe(1);
 });
 
 test("clicking an empty board (no mines) should click all tiles", () => {
@@ -69,6 +74,91 @@ test("clicking an empty board (no mines) should click all tiles", () => {
   for (let row = 0; row < rows; row++) {
     for (let column = 0; column < columns; column++) {
       expect(board.board[row][column].cellState).toBe(CellState.Clicked);
+    }
+  }
+});
+
+test("right clicking an unclicked cell cycles bettern unclicked/flagged/questioned", () => {
+  const rows = 2;
+  const columns = 2;
+  let board = new Board(rows, columns, 0);
+  board.board[1][1].isMine = true;
+
+  expect(board.board[0][0].cellState).toBe(CellState.Unclicked);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Flagged);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Questioned);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Unclicked);
+
+  expect(board.board[1][1].cellState).toBe(CellState.UnclickedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.FlaggedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.QuestionedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.UnclickedMine);
+});
+
+test("clicking a flagged or questioned cell does nothing", () => {
+  const rows = 2;
+  const columns = 2;
+  let board = new Board(rows, columns, 0);
+  board.board[1][1].isMine = true;
+
+  expect(board.board[0][0].cellState).toBe(CellState.Unclicked);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Flagged);
+  board.board[0][0].click();
+  expect(board.board[0][0].cellState).toBe(CellState.Flagged);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Questioned);
+  board.board[0][0].click();
+  expect(board.board[0][0].cellState).toBe(CellState.Questioned);
+  board.board[0][0].rightClick();
+  expect(board.board[0][0].cellState).toBe(CellState.Unclicked);
+  board.board[0][0].click();
+  expect(board.board[0][0].cellState).toBe(CellState.Clicked);
+
+  expect(board.board[1][1].cellState).toBe(CellState.UnclickedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.FlaggedMine);
+  board.board[1][1].click();
+  expect(board.board[1][1].cellState).toBe(CellState.FlaggedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.QuestionedMine);
+  board.board[1][1].click();
+  expect(board.board[1][1].cellState).toBe(CellState.QuestionedMine);
+  board.board[1][1].rightClick();
+  expect(board.board[1][1].cellState).toBe(CellState.UnclickedMine);
+  board.board[1][1].click();
+  expect(board.board[1][1].cellState).toBe(CellState.ClickedMine);
+});
+
+test("floodfilling an area ignores flagged and questioned cells", () => {
+  const rows = 4;
+  const columns = 4;
+  let board = new Board(rows, columns, 0);
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      expect(board.board[row][column].cellState).toBe(CellState.Unclicked);
+    }
+  }
+  board.board[0][0].rightClick(); // flag
+  board.board[1][1].rightClick(); // flag
+  board.board[1][1].rightClick(); // question
+
+  board.click({ row: 3, column: 3 });
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      if (row == 0 && column == 0) {
+        expect(board.board[row][column].cellState).toBe(CellState.Flagged);
+      } else if (row == 1 && column == 1) {
+        expect(board.board[row][column].cellState).toBe(CellState.Questioned);
+      } else {
+        expect(board.board[row][column].cellState).toBe(CellState.Clicked);
+      }
     }
   }
 });

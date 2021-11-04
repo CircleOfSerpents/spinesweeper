@@ -3,13 +3,24 @@ import Board, { CellIndex } from "./engine/Board";
 import GameBoard from "./GameBoard/GameBoard"
 import { useState } from 'react';
 
+document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+});
+
 function App() {
   const [gameBoard, setGameBoard] = useState(new Board(20, 20, 50));
 
-  let onCellClick = (clickedIndex: CellIndex) => {
-    const newBoard = gameBoard.click(clickedIndex)
-    console.log(newBoard.board)
-    setGameBoard(newBoard)
+  let onCellClick = (e: React.MouseEvent<HTMLDivElement>, clickedIndex: CellIndex) => {
+    if (e.type === "click"){
+      const newBoard = gameBoard.click(clickedIndex)
+      setGameBoard(newBoard)
+    } else if (e.type === "contextmenu") {
+      e.preventDefault()
+      const newBoard = gameBoard.rightClick(clickedIndex)
+      setGameBoard(newBoard)
+    }
+
+    
   }
 
   return (
