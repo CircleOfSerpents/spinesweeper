@@ -1,5 +1,5 @@
 import "./GameCell.css";
-import Board, { CellIndex, CellState, clickedStates, nonMineStates, unclickedStates } from "../engine/Board";
+import {CellState, unclickedStates} from "../engine/Cell"
 
 type GameCellProps = {
   cellState: CellState;

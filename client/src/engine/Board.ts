@@ -1,17 +1,5 @@
 import _ from "lodash";
-import chunk from "lodash/chunk";
-
-export enum CellState {
-  Unclicked,
-  Clicked,
-  UnclickedMine,
-  ClickedMine,
-}
-export const nonMineStates = [CellState.Unclicked, CellState.Clicked];
-export const mineStates = [CellState.UnclickedMine, CellState.ClickedMine];
-export const unclickedStates = [CellState.Unclicked, CellState.UnclickedMine];
-export const unclickedNonMineStates = [CellState.Unclicked];
-export const clickedStates = [CellState.Clicked, CellState.ClickedMine];
+import Cell, { CellState, clickedStates, mineStates, nonMineStates, unclickedNonMineStates } from "./Cell";
 
 const neighborOffsets = [
   { row: 0, column: 1 },
@@ -33,7 +21,7 @@ export default class Board {
   public rows: number;
   public columns: number;
   public mines: number;
-  public board: number[][];
+  public board: Cell[][];
 
   constructor(rows: number, columns: number, mines: number) {
     this.validateInputs(rows, columns, mines);
@@ -84,7 +72,7 @@ export default class Board {
     if (!this.isCellInBounds(cellIndex)) {
       throw Error("Cell out of bounds");
     }
-    return this.board[cellIndex.row][cellIndex.column];
+    return this.board[cellIndex.row][cellIndex.column].cellState;
   }
 
   /**
@@ -93,7 +81,7 @@ export default class Board {
   protected floodfill(cellIndex: CellIndex) {
     let cellState = this.getCellState(cellIndex);
     if (cellState === CellState.Unclicked) {
-      this.board[cellIndex.row][cellIndex.column] = CellState.Clicked;
+      this.board[cellIndex.row][cellIndex.column].click();
       if (this.getCellNumNeighborMines(cellIndex) === 0) {
         this.getInBoundNeighbors(cellIndex).forEach((neighbor) => {
           this.floodfill(neighbor);
@@ -109,7 +97,7 @@ export default class Board {
     for (let row = 0; row < this.rows; row++) {
       for (let column = 0; column < this.columns; column++) {
         if (this.isMineCell({ row, column })) {
-          this.board[row][column] = CellState.ClickedMine;
+          this.board[row][column].click();
         }
       }
     }
@@ -132,12 +120,12 @@ export default class Board {
     return true;
   }
 
-  protected createInternalBoard(mines: number): CellState[][] {
+  protected createInternalBoard(mines: number): Cell[][] {
     let board = Array(this.rows);
     for (let row = 0; row < this.rows; row++) {
       board[row] = Array(this.columns);
       for (let column = 0; column < this.columns; column++) {
-        board[row][column] = CellState.Unclicked;
+        board[row][column] = new Cell();
       }
     }
     return board;
@@ -150,7 +138,7 @@ export default class Board {
       let row = this.getRandomInt(this.rows);
       let column = this.getRandomInt(this.columns);
       if (this.isUnclickedNonMineCell({ row, column })) {
-        this.board[row][column] = CellState.UnclickedMine;
+        this.board[row][column].isMine = true;
         addedMines++;
         this.mines++;
       }
