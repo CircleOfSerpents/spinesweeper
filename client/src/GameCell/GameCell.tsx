@@ -1,5 +1,5 @@
 import "./GameCell.css";
-import Board, { CellIndex, CellState, clickedStates, nonMineStates, unclickedStates } from "../engine/Board";
+import {CellState, unclickedStates} from "../engine/Cell"
 
 type GameCellProps = {
   cellState: CellState;
@@ -15,6 +15,12 @@ function GameCell({cellState, numNeighborMines}: GameCellProps) {
     }
     if (cellState === CellState.ClickedMine) {
       return "💣"
+    }
+    if (cellState === CellState.Flagged || cellState === CellState.FlaggedMine) {
+      return "🚩"
+    }
+    if (cellState === CellState.Questioned || cellState === CellState.QuestionedMine) {
+      return "❓"
     }
     return ""
   }

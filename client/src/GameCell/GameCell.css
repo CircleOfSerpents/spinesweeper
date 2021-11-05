@@ -3,6 +3,9 @@
   height: 30px;
   background-color: #c6c6c6;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .GameCell.clicked {
