@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import Board from '../engine/Board';
-import GameBoard from './GameBoard';
+import { render, screen } from "@testing-library/react";
+import Board from "../engine/Board";
+import GameBoard from "./GameBoard";
 
 // test('renders learn react link', () => {
 //   let gameBoard = new Board(5, 5, 5)

@@ -25,6 +25,7 @@ export const unclickedStates = [
   CellState.Questioned,
   CellState.QuestionedMine,
 ];
+export const flaggedStates = [CellState.Flagged, CellState.FlaggedMine];
 export const unclickedNonMineStates = [CellState.Unclicked, CellState.Flagged, CellState.Questioned];
 export const clickedStates = [CellState.Clicked, CellState.ClickedMine];
 

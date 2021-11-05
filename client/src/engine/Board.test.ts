@@ -1,5 +1,5 @@
 import Board, { CellIndex } from "./Board";
-import { CellState } from "./Cell";
+import Cell, { CellState } from "./Cell";
 
 test("create valid board", () => {
   let mines = 35;
@@ -78,7 +78,7 @@ test("clicking an empty board (no mines) should click all tiles", () => {
   }
 });
 
-test("right clicking an unclicked cell cycles bettern unclicked/flagged/questioned", () => {
+test("right clicking an unclicked cell cycles bettween unclicked/flagged/questioned", () => {
   const rows = 2;
   const columns = 2;
   let board = new Board(rows, columns, 0);
@@ -161,6 +161,77 @@ test("floodfilling an area ignores flagged and questioned cells", () => {
       }
     }
   }
+});
+
+test("clicking a clicked cell with flagged adjacent mines will clear all non-flagged neighbors", () => {
+  let board = new Board(5, 5, 0);
+  board.board[1][1].isMine = true;
+  board.board[3][3].isMine = true;
+  board.board[1][2].isMine = true;
+  board.click({ row: 2, column: 2 });
+  board.rightClick({ row: 1, column: 1 });
+  board.rightClick({ row: 3, column: 3 });
+  board.rightClick({ row: 1, column: 2 });
+
+  board.click({ row: 2, column: 2 });
+  compareBoardState(board.board, [
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.FlaggedMine, CellState.FlaggedMine, CellState.Clicked, CellState.Unclicked],
+    [CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.Unclicked],
+    [CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.FlaggedMine, CellState.Unclicked],
+    [CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.Unclicked, CellState.Unclicked],
+  ]);
+});
+
+test("clicking a clicked cell with improperly, but same number of, flagged adjacent mines will explode", () => {
+  let board = new Board(5, 5, 0);
+  board.board[1][1].isMine = true;
+  board.board[3][3].isMine = true;
+  board.board[1][2].isMine = true;
+  board.click({ row: 2, column: 2 });
+  board.rightClick({ row: 2, column: 1 });
+  board.rightClick({ row: 3, column: 3 });
+  board.rightClick({ row: 1, column: 2 });
+
+  board.rightClick({ row: 2, column: 2 });
+  compareBoardState(board.board, [
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.ClickedMine, CellState.FlaggedMine, CellState.Clicked, CellState.Unclicked],
+    [CellState.Clicked, CellState.Flagged, CellState.Clicked, CellState.Clicked, CellState.Unclicked],
+    [CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.FlaggedMine, CellState.Unclicked],
+    [CellState.Clicked, CellState.Clicked, CellState.Clicked, CellState.Unclicked, CellState.Unclicked],
+  ]);
+});
+
+test("clicking a clicked cell with a different number of flagged and mine neighbors does nothing", () => {
+  let board = new Board(5, 5, 0);
+  board.board[1][1].isMine = true;
+  board.board[3][3].isMine = true;
+  board.board[1][2].isMine = true;
+  board.click({ row: 2, column: 2 });
+  board.rightClick({ row: 2, column: 1 });
+  board.rightClick({ row: 3, column: 3 });
+
+  board.rightClick({ row: 2, column: 2 });
+  compareBoardState(board.board, [
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.UnclickedMine, CellState.UnclickedMine, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Flagged, CellState.Clicked, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.FlaggedMine, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+  ]);
+
+  board.rightClick({ row: 1, column: 2 });
+  board.rightClick({ row: 2, column: 3 });
+
+  board.rightClick({ row: 2, column: 2 });
+  compareBoardState(board.board, [
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.UnclickedMine, CellState.FlaggedMine, CellState.Unclicked, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Flagged, CellState.Clicked, CellState.Flagged, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.FlaggedMine, CellState.Unclicked],
+    [CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked, CellState.Unclicked],
+  ]);
 });
 
 test("clicking an empty cell floodfills all cells with no neighboring mines", () => {
@@ -319,5 +390,13 @@ let setMines = (board: Board, mineList: CellIndex[]) => {
 let verifyState = (board: Board, cellList: CellIndex[], state: CellState) => {
   cellList.forEach((cellIndex) => {
     expect(board.board[cellIndex.row][cellIndex.column].cellState).toBe(state);
+  });
+};
+
+let compareBoardState = (actual: Cell[][], expected: CellState[][]) => {
+  actual.forEach((row, rowNumber) => {
+    row.forEach((cell, columnNumber) => {
+      expect(cell.cellState).toBe(expected[rowNumber][columnNumber]);
+    });
   });
 };
