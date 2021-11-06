@@ -1,5 +1,5 @@
 import _ from "lodash";
-import Cell, { CellState, clickedStates, mineStates, nonMineStates, unclickedNonMineStates } from "./Cell";
+import Cell, { CellState, flaggedStates, mineStates, unclickedNonMineStates, unclickedStates } from "./Cell";
 
 const neighborOffsets = [
   { row: 0, column: 1 },
@@ -38,21 +38,35 @@ export default class Board {
 
   public click(cellIndex: CellIndex): Board {
     let cellState = this.getCellState(cellIndex);
-    if (clickedStates.includes(cellState)) return this;
     if (cellState === CellState.Unclicked) {
       this.floodfill(cellIndex);
-    }
-    if (cellState === CellState.UnclickedMine) {
+    } else if (cellState === CellState.UnclickedMine) {
       this.explode();
-      return _.cloneDeep(this);
+    } else if (this.isFullyFlaggedCell(cellIndex)) {
+      this.clickAllNeighbors(cellIndex);
     }
     return _.cloneDeep(this);
   }
 
   public rightClick(cellIndex: CellIndex): Board {
     let cell = this.getCell(cellIndex);
-    cell.rightClick();
+    if (unclickedStates.includes(cell.cellState)) {
+      cell.rightClick();
+    } else if (this.isFullyFlaggedCell(cellIndex)) {
+      this.clickAllNeighbors(cellIndex);
+    }
     return _.cloneDeep(this);
+  }
+
+  protected clickAllNeighbors(cellIndex: CellIndex) {
+    // Click all neighbors
+    this.getInBoundNeighbors(cellIndex).forEach((neighbor) => {
+      if (this.getCellState(neighbor) === CellState.UnclickedMine) {
+        this.explode();
+      } else {
+        this.floodfill(neighbor);
+      }
+    });
   }
 
   /**
@@ -65,6 +79,19 @@ export default class Board {
     if (!this.isCellInBounds(cellIndex)) return 0;
     return this.getInBoundNeighbors(cellIndex)
       .map((neighbor) => this.isMineCell(neighbor))
+      .filter(Boolean).length;
+  }
+
+  /**
+   * Calculate the count of the number of adjacent flagged cells in the 8 neighbors of the cell at board[row][column]
+   * @param row the row of the cell
+   * @param column the column of the cell
+   * @returns a count of flagged neighbors
+   */
+  public getCellNumNeighborFlags(cellIndex: CellIndex): number {
+    if (!this.isCellInBounds(cellIndex)) return 0;
+    return this.getInBoundNeighbors(cellIndex)
+      .map((neighbor) => this.isFlaggedCell(neighbor))
       .filter(Boolean).length;
   }
 
@@ -100,7 +127,7 @@ export default class Board {
   protected floodfill(cellIndex: CellIndex) {
     let cellState = this.getCellState(cellIndex);
     if (cellState === CellState.Unclicked) {
-      this.board[cellIndex.row][cellIndex.column].click();
+      this.getCell(cellIndex).click();
       if (this.getCellNumNeighborMines(cellIndex) === 0) {
         this.getInBoundNeighbors(cellIndex).forEach((neighbor) => {
           this.floodfill(neighbor);
@@ -172,8 +199,15 @@ export default class Board {
     return unclickedNonMineStates.includes(this.getCellState(cellIndex));
   }
 
-  protected isNonMineCell(cellIndex: CellIndex) {
-    return nonMineStates.includes(this.getCellState(cellIndex));
+  protected isFlaggedCell(cellIndex: CellIndex) {
+    return flaggedStates.includes(this.getCellState(cellIndex));
+  }
+
+  protected isFullyFlaggedCell(cellIndex: CellIndex) {
+    return (
+      this.getCellState(cellIndex) === CellState.Clicked &&
+      this.getCellNumNeighborFlags(cellIndex) === this.getCellNumNeighborMines(cellIndex)
+    );
   }
 
   protected validateInputs(rows: number, columns: number, mines: number): void {
