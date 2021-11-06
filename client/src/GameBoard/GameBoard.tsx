@@ -10,7 +10,7 @@ type GameBoardProps = {
 
 function GameBoard({ gameBoard, onCellClick }: GameBoardProps) {
   return (
-    <div className="GameBoard" id="board">
+    <div className="GameBoard" id="game-board" data-testid="game-board">
       {gameBoard.board.map((row: Cell[], rowNumber: number) => (
         <div className="Row" key={rowNumber}>
           {row.map((cell: Cell, columnNumber: number) => (
