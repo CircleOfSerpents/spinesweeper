@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/spinesweeper/static/css/main.38301e7c.chunk.css",
-    "main.js": "/spinesweeper/static/js/main.755dbbb8.chunk.js",
-    "main.js.map": "/spinesweeper/static/js/main.755dbbb8.chunk.js.map",
+    "main.js": "/spinesweeper/static/js/main.85f1b7d2.chunk.js",
+    "main.js.map": "/spinesweeper/static/js/main.85f1b7d2.chunk.js.map",
     "runtime-main.js": "/spinesweeper/static/js/runtime-main.6b2fd7cd.js",
     "runtime-main.js.map": "/spinesweeper/static/js/runtime-main.6b2fd7cd.js.map",
     "static/js/2.9e58b7af.chunk.js": "/spinesweeper/static/js/2.9e58b7af.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.6b2fd7cd.js",
     "static/js/2.9e58b7af.chunk.js",
     "static/css/main.38301e7c.chunk.css",
-    "static/js/main.755dbbb8.chunk.js"
+    "static/js/main.85f1b7d2.chunk.js"
   ]
 }
