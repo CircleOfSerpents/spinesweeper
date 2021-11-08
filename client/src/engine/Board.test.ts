@@ -5,7 +5,6 @@ test("create valid board", () => {
   let mines = 35;
   let board = new Board(10, 10, mines);
   expect(board).toBeDefined();
-  expect(board.size()).toBe(100);
 
   let actualMines = 0;
   for (let row = 0; row < board.rows; row++) {
