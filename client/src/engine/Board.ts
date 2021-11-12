@@ -1,4 +1,3 @@
-import _ from "lodash";
 import Cell, { CellState, flaggedStates, mineStates, unclickedNonMineStates, unclickedStates } from "./Cell";
 import { GameState } from "./GameState";
 

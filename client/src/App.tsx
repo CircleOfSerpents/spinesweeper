@@ -3,6 +3,7 @@ import { CellIndex } from "./engine/Board";
 import GameBoard from "./GameBoard/GameBoard";
 import { useState } from "react";
 import Game from "./engine/Game";
+import GameTimer from "./GameTimer/GameTimer";
 
 document.addEventListener("contextmenu", (event) => {
   event.preventDefault();
@@ -29,6 +30,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <button onClick={reset}>Reset</button>
+        <GameTimer gameState={game.gameState} />
         <GameBoard gameBoard={game.board} onCellClick={onCellClick} />
       </header>
     </div>
