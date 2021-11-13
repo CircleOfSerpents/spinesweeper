@@ -380,6 +380,22 @@ test("clicking a mine sets all mines to ClickedMine", () => {
   verifyState(board, mines, CellState.ClickedMine);
 });
 
+test("flagging a cell should decrement mineCount", () => {
+  const rows = 10;
+  const columns = 10;
+  const mines = 3;
+  let board = new Board(rows, columns, 3);
+  expect(board.mineCount).toBe(mines);
+  board.rightClick({ row: 0, column: 0 });
+  expect(board.mineCount).toBe(2);
+  board.rightClick({ row: 1, column: 1 });
+  expect(board.mineCount).toBe(1);
+  board.rightClick({ row: 2, column: 2 });
+  expect(board.mineCount).toBe(0);
+  board.rightClick({ row: 0, column: 2 });
+  expect(board.mineCount).toBe(-1);
+});
+
 let setMines = (board: Board, mineList: CellIndex[]) => {
   mineList.forEach((cellIndex) => {
     board.board[cellIndex.row][cellIndex.column].isMine = true;

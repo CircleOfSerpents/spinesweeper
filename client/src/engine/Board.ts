@@ -20,7 +20,8 @@ export type CellIndex = {
 export default class Board {
   public rows: number;
   public columns: number;
-  public mines: number;
+  protected mines: number;
+  public mineCount: number; // used for mine display in UI
   public board: Cell[][];
 
   constructor(rows: number, columns: number, mines: number) {
@@ -30,6 +31,7 @@ export default class Board {
     this.mines = 0; // Initialize to 0 because we will increment as each mine is added
     this.board = this.createInternalBoard(mines);
     this.addMines(mines);
+    this.mineCount = this.mines;
   }
 
   /**
@@ -47,7 +49,10 @@ export default class Board {
     } else if (this.isFullyFlaggedCell(cellIndex)) {
       this.clickAllNeighbors(cellIndex);
     }
-    return this.calculateGameState();
+    this.mineCount = this.calculateMineCount();
+    const gameState = this.calculateGameState();
+    this.cleanUpGameIfNecessary(gameState);
+    return gameState;
   }
 
   /**
@@ -57,13 +62,16 @@ export default class Board {
    * @returns the new GameState of the game after the action is complete
    */
   public rightClick(cellIndex: CellIndex): GameState {
-    let cell = this.getCell(cellIndex);
+    const cell = this.getCell(cellIndex);
     if (unclickedStates.includes(cell.cellState)) {
       cell.rightClick();
     } else if (this.isFullyFlaggedCell(cellIndex)) {
       this.clickAllNeighbors(cellIndex);
     }
-    return this.calculateGameState();
+    this.mineCount = this.calculateMineCount();
+    const gameState = this.calculateGameState();
+    this.cleanUpGameIfNecessary(gameState);
+    return gameState;
   }
 
   /**
@@ -82,6 +90,22 @@ export default class Board {
       return GameState.Won;
     }
     return GameState.Active;
+  }
+
+  /**
+   * Calculate the mine count to display in the UI
+   * @returns A count of the total mines minus flagged cells
+   */
+  protected calculateMineCount(): number {
+    let count = this.mines;
+    for (let row = 0; row < this.rows; row++) {
+      for (let column = 0; column < this.columns; column++) {
+        if (flaggedStates.includes(this.getCellState({ row, column }))) {
+          count -= 1;
+        }
+      }
+    }
+    return count;
   }
 
   /**
@@ -264,6 +288,25 @@ export default class Board {
     );
   }
 
+  /**
+   * Flags all mines at the end of a winning game
+   * @param gameState the current GameState
+   */
+  protected cleanUpGameIfNecessary(gameState: GameState) {
+    if (gameState === GameState.Won) {
+      for (let row = 0; row < this.rows; row++) {
+        for (let column = 0; column < this.columns; column++) {
+          if (this.getCellState({ row, column }) === CellState.QuestionedMine) {
+            this.rightClick({ row, column });
+          }
+          if (this.getCellState({ row, column }) === CellState.UnclickedMine) {
+            this.rightClick({ row, column });
+          }
+        }
+      }
+    }
+  }
+
   protected validateInputs(rows: number, columns: number, mines: number): void {
     const maxMines = (rows * columns) / 2;
     if (mines < 0 || mines > maxMines) {
@@ -279,5 +322,13 @@ export default class Board {
 
   protected getRandomInt(max: number) {
     return Math.floor(Math.random() * (max - 1));
+  }
+
+  public allCells(): Array<Cell> {
+    let arr: Array<Cell> = [];
+    for (let row = 0; row < this.rows; row++) {
+      arr = arr.concat(this.board[row]);
+    }
+    return arr;
   }
 }

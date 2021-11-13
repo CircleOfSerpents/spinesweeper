@@ -10,7 +10,11 @@ document.addEventListener("contextmenu", (event) => {
 });
 
 function App() {
-  const [game, setGame] = useState(new Game(20, 20, 50));
+  const rows = 20;
+  const columns = 20;
+  const mines = 50;
+
+  const [game, setGame] = useState(new Game(rows, columns, mines));
 
   let onCellClick = (e: React.MouseEvent<HTMLDivElement>, clickedIndex: CellIndex) => {
     if (e.type === "click") {
@@ -23,14 +27,17 @@ function App() {
   };
 
   let reset = () => {
-    setGame(new Game(20, 20, 50));
+    setGame(new Game(rows, columns, mines));
   };
 
   return (
     <div className="App">
       <header className="App-header">
         <button onClick={reset}>Reset</button>
-        <GameTimer gameState={game.gameState} />
+        <div className="header-numbers">
+          <GameTimer gameState={game.gameState} />
+          {game.board.mineCount}
+        </div>
         <GameBoard gameBoard={game.board} onCellClick={onCellClick} />
       </header>
     </div>
