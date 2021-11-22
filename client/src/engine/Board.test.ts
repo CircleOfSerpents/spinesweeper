@@ -5,7 +5,6 @@ test("create valid board", () => {
   let mines = 35;
   let board = new Board(10, 10, mines);
   expect(board).toBeDefined();
-  expect(board.size()).toBe(100);
 
   let actualMines = 0;
   for (let row = 0; row < board.rows; row++) {
@@ -379,6 +378,22 @@ test("clicking a mine sets all mines to ClickedMine", () => {
   verifyState(board, clicked, CellState.Clicked);
   verifyState(board, unclicked, CellState.Unclicked);
   verifyState(board, mines, CellState.ClickedMine);
+});
+
+test("flagging a cell should decrement mineCount", () => {
+  const rows = 10;
+  const columns = 10;
+  const mines = 3;
+  let board = new Board(rows, columns, 3);
+  expect(board.mineCount).toBe(mines);
+  board.rightClick({ row: 0, column: 0 });
+  expect(board.mineCount).toBe(2);
+  board.rightClick({ row: 1, column: 1 });
+  expect(board.mineCount).toBe(1);
+  board.rightClick({ row: 2, column: 2 });
+  expect(board.mineCount).toBe(0);
+  board.rightClick({ row: 0, column: 2 });
+  expect(board.mineCount).toBe(-1);
 });
 
 let setMines = (board: Board, mineList: CellIndex[]) => {

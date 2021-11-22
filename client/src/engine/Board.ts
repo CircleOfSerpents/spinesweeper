@@ -1,5 +1,5 @@
-import _ from "lodash";
 import Cell, { CellState, flaggedStates, mineStates, unclickedNonMineStates, unclickedStates } from "./Cell";
+import { GameState } from "./GameState";
 
 const neighborOffsets = [
   { row: 0, column: 1 },
@@ -20,7 +20,8 @@ export type CellIndex = {
 export default class Board {
   public rows: number;
   public columns: number;
-  public mines: number;
+  protected mines: number;
+  public mineCount: number; // used for mine display in UI
   public board: Cell[][];
 
   constructor(rows: number, columns: number, mines: number) {
@@ -30,13 +31,16 @@ export default class Board {
     this.mines = 0; // Initialize to 0 because we will increment as each mine is added
     this.board = this.createInternalBoard(mines);
     this.addMines(mines);
+    this.mineCount = this.mines;
   }
 
-  public size(): number {
-    return this.rows * this.columns;
-  }
-
-  public click(cellIndex: CellIndex): Board {
+  /**
+   * Perform left click actions (click and click neighbors) on the
+   * cell at cellIndex and return the new GameState
+   * @param cellIndex the cell left clicked
+   * @returns the new GameState of the game after the action is complete
+   */
+  public click(cellIndex: CellIndex): GameState {
     let cellState = this.getCellState(cellIndex);
     if (cellState === CellState.Unclicked) {
       this.floodfill(cellIndex);
@@ -45,21 +49,83 @@ export default class Board {
     } else if (this.isFullyFlaggedCell(cellIndex)) {
       this.clickAllNeighbors(cellIndex);
     }
-    return _.cloneDeep(this);
+    this.mineCount = this.calculateMineCount();
+    const gameState = this.calculateGameState();
+    this.cleanUpGameIfNecessary(gameState);
+    return gameState;
   }
 
-  public rightClick(cellIndex: CellIndex): Board {
-    let cell = this.getCell(cellIndex);
+  /**
+   * Perform right click actions (flag, question, click neighbors) on the
+   * cell at cellIndex and return the new GameState
+   * @param cellIndex the cell right clicked
+   * @returns the new GameState of the game after the action is complete
+   */
+  public rightClick(cellIndex: CellIndex): GameState {
+    const cell = this.getCell(cellIndex);
     if (unclickedStates.includes(cell.cellState)) {
       cell.rightClick();
     } else if (this.isFullyFlaggedCell(cellIndex)) {
       this.clickAllNeighbors(cellIndex);
     }
-    return _.cloneDeep(this);
+    this.mineCount = this.calculateMineCount();
+    const gameState = this.calculateGameState();
+    this.cleanUpGameIfNecessary(gameState);
+    return gameState;
   }
 
+  /**
+   * Calculate the current GameState of the board
+   */
+  protected calculateGameState(): GameState {
+    let stateCounts = this.getStateCounts();
+    if (!!stateCounts[CellState.ClickedMine]) {
+      return GameState.Lost;
+    } else if (
+      (stateCounts[CellState.Unclicked] || 0) +
+        (stateCounts[CellState.Flagged] || 0) +
+        (stateCounts[CellState.Questioned] || 0) ===
+      0
+    ) {
+      return GameState.Won;
+    }
+    return GameState.Active;
+  }
+
+  /**
+   * Calculate the mine count to display in the UI
+   * @returns A count of the total mines minus flagged cells
+   */
+  protected calculateMineCount(): number {
+    let count = this.mines;
+    for (let row = 0; row < this.rows; row++) {
+      for (let column = 0; column < this.columns; column++) {
+        if (flaggedStates.includes(this.getCellState({ row, column }))) {
+          count -= 1;
+        }
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Get a map of counts of CellState for every cell on the board
+   */
+  protected getStateCounts(): { [key in CellState]?: number } {
+    let stateCounts: { [key in CellState]?: number } = {};
+    for (let row = 0; row < this.rows; row++) {
+      for (let column = 0; column < this.columns; column++) {
+        let cellState = this.getCellState({ row, column });
+        stateCounts[cellState] = (stateCounts[cellState] || 0) + 1;
+      }
+    }
+    return stateCounts;
+  }
+
+  /**
+   * Perform a left click on all neighbors of the cell at cellIndex
+   */
   protected clickAllNeighbors(cellIndex: CellIndex) {
-    // Click all neighbors
     this.getInBoundNeighbors(cellIndex).forEach((neighbor) => {
       if (this.getCellState(neighbor) === CellState.UnclickedMine) {
         this.explode();
@@ -149,6 +215,9 @@ export default class Board {
     }
   }
 
+  /**
+   * Get all neighbors of the cell at cellIndex that are in the board
+   */
   protected getInBoundNeighbors(cellIndex: CellIndex): CellIndex[] {
     let inBoundsNeighbors: CellIndex[] = [];
     neighborOffsets.forEach((offset) => {
@@ -160,12 +229,18 @@ export default class Board {
     return inBoundsNeighbors;
   }
 
+  /**
+   * Return true if the cell at cellIndex is in board
+   */
   protected isCellInBounds(cellIndex: CellIndex): boolean {
     if (cellIndex.row < 0 || cellIndex.row >= this.rows) return false;
     if (cellIndex.column < 0 || cellIndex.column >= this.columns) return false;
     return true;
   }
 
+  /**
+   * Instantiate the internal Board object for storing board state
+   */
   protected createInternalBoard(mines: number): Cell[][] {
     let board = Array(this.rows);
     for (let row = 0; row < this.rows; row++) {
@@ -177,10 +252,13 @@ export default class Board {
     return board;
   }
 
-  protected addMines(mines: number) {
+  /**
+   * Add numMines mines to the game board without exceeding the maximum
+   */
+  protected addMines(numMines: number) {
     const maxMines = (this.rows * this.columns) / 2;
     let addedMines = 0;
-    while (addedMines < mines && this.mines < maxMines) {
+    while (addedMines < numMines && this.mines < maxMines) {
       let row = this.getRandomInt(this.rows);
       let column = this.getRandomInt(this.columns);
       if (this.isUnclickedNonMineCell({ row, column })) {
@@ -210,6 +288,25 @@ export default class Board {
     );
   }
 
+  /**
+   * Flags all mines at the end of a winning game
+   * @param gameState the current GameState
+   */
+  protected cleanUpGameIfNecessary(gameState: GameState) {
+    if (gameState === GameState.Won) {
+      for (let row = 0; row < this.rows; row++) {
+        for (let column = 0; column < this.columns; column++) {
+          if (this.getCellState({ row, column }) === CellState.QuestionedMine) {
+            this.rightClick({ row, column });
+          }
+          if (this.getCellState({ row, column }) === CellState.UnclickedMine) {
+            this.rightClick({ row, column });
+          }
+        }
+      }
+    }
+  }
+
   protected validateInputs(rows: number, columns: number, mines: number): void {
     const maxMines = (rows * columns) / 2;
     if (mines < 0 || mines > maxMines) {
@@ -225,5 +322,13 @@ export default class Board {
 
   protected getRandomInt(max: number) {
     return Math.floor(Math.random() * (max - 1));
+  }
+
+  public allCells(): Array<Cell> {
+    let arr: Array<Cell> = [];
+    for (let row = 0; row < this.rows; row++) {
+      arr = arr.concat(this.board[row]);
+    }
+    return arr;
   }
 }

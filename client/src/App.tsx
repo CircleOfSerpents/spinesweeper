@@ -1,29 +1,44 @@
 import "./App.css";
-import Board, { CellIndex } from "./engine/Board";
+import { CellIndex } from "./engine/Board";
 import GameBoard from "./GameBoard/GameBoard";
 import { useState } from "react";
+import Game from "./engine/Game";
+import GameTimer from "./GameTimer/GameTimer";
 
 document.addEventListener("contextmenu", (event) => {
   event.preventDefault();
 });
 
 function App() {
-  const [gameBoard, setGameBoard] = useState(new Board(20, 20, 50));
+  const rows = 20;
+  const columns = 20;
+  const mines = 50;
+
+  const [game, setGame] = useState(new Game(rows, columns, mines));
 
   let onCellClick = (e: React.MouseEvent<HTMLDivElement>, clickedIndex: CellIndex) => {
     if (e.type === "click") {
-      const newBoard = gameBoard.click(clickedIndex);
-      setGameBoard(newBoard);
+      const newGame = game.click(clickedIndex);
+      setGame(newGame);
     } else if (e.type === "contextmenu") {
-      const newBoard = gameBoard.rightClick(clickedIndex);
-      setGameBoard(newBoard);
+      const newGame = game.rightClick(clickedIndex);
+      setGame(newGame);
     }
+  };
+
+  let reset = () => {
+    setGame(new Game(rows, columns, mines));
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <GameBoard gameBoard={gameBoard} onCellClick={onCellClick} />
+        <button onClick={reset}>Reset</button>
+        <div className="header-numbers">
+          <GameTimer gameState={game.gameState} />
+          {game.board.mineCount}
+        </div>
+        <GameBoard gameBoard={game.board} onCellClick={onCellClick} />
       </header>
     </div>
   );
