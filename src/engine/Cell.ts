@@ -29,7 +29,7 @@ export const flaggedStates = [CellState.Flagged, CellState.FlaggedMine];
 export const unclickedNonMineStates = [CellState.Unclicked, CellState.Flagged, CellState.Questioned];
 export const clickedStates = [CellState.Clicked, CellState.ClickedMine];
 
-export default class Cell {
+export class Cell {
   private _isClicked: boolean = false;
   private _isMine: boolean = false;
   private _isFlagged: boolean = false;
