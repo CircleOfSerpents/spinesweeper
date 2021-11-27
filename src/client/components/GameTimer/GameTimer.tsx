@@ -1,5 +1,5 @@
 import "./GameTimer.css";
-import { GameState } from "../engine/GameState";
+import { GameState } from "../../../engine/GameState";
 import { useEffect, useRef, useState } from "react";
 
 type GameTimerProps = {

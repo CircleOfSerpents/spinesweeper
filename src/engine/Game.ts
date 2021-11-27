@@ -1,8 +1,9 @@
-import _ from "lodash";
-import Board, { CellIndex } from "./Board";
+import * as _ from "lodash";
+import { Board, CellIndex } from "./Board";
+import { Cell } from "./Cell";
 import { GameState } from "./GameState";
 
-export default class Game {
+export class Game {
   public board: Board;
   protected _gameState: GameState = GameState.Idle;
 
@@ -41,4 +42,19 @@ export default class Game {
     this._gameState = this.board.rightClick(cellIndex);
     return _.cloneDeep(this);
   }
+}
+
+export function deserializeGame(json: any): Game {
+  var instance = new Game(10, 10, 10); // NOTE: if your constructor checks for unpassed arguments, then just pass dummy ones to prevent throwing an error
+  Object.assign(instance, json);
+  for (let row = 0; row < instance.board.rows; row++) {
+    for (let column = 0; column < instance.board.columns; column++) {
+      let cell = new Cell();
+      Object.assign(cell, json.board.board[row][column]);
+      json.board.board[row][column] = cell;
+    }
+  }
+  instance.board = new Board(10, 10, 10);
+  Object.assign(instance.board, json.board);
+  return instance;
 }

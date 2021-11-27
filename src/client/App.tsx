@@ -1,9 +1,9 @@
 import "./App.css";
-import { CellIndex } from "./engine/Board";
-import GameBoard from "./GameBoard/GameBoard";
 import { useState } from "react";
-import Game from "./engine/Game";
-import GameTimer from "./GameTimer/GameTimer";
+import { CellIndex } from "../engine/Board";
+import { Game } from "../engine/Game";
+import GameBoard from "./components/GameBoard/GameBoard";
+import GameTimer from "./components/GameTimer/GameTimer";
 
 document.addEventListener("contextmenu", (event) => {
   event.preventDefault();

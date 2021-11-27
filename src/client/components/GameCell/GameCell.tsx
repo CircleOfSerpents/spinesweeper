@@ -1,5 +1,5 @@
 import "./GameCell.css";
-import { CellState, unclickedStates } from "../engine/Cell";
+import { CellState, unclickedStates } from "../../../engine/Cell";
 
 type GameCellProps = {
   cellState: CellState;

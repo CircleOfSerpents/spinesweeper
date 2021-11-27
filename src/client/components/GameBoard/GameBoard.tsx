@@ -1,6 +1,6 @@
 import "./GameBoard.css";
-import Board, { CellIndex } from "../engine/Board";
-import Cell from "../engine/Cell";
+import { Board, CellIndex } from "../../../engine/Board";
+import { Cell } from "../../../engine/Cell";
 import GameCell from "../GameCell/GameCell";
 
 type GameBoardProps = {

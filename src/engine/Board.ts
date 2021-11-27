@@ -1,4 +1,4 @@
-import Cell, { CellState, flaggedStates, mineStates, unclickedNonMineStates, unclickedStates } from "./Cell";
+import { Cell, CellState, flaggedStates, mineStates, unclickedNonMineStates, unclickedStates } from "./Cell";
 import { GameState } from "./GameState";
 
 const neighborOffsets = [
@@ -17,7 +17,7 @@ export type CellIndex = {
   column: number;
 };
 
-export default class Board {
+export class Board {
   public rows: number;
   public columns: number;
   protected mines: number;
@@ -321,7 +321,11 @@ export default class Board {
   }
 
   protected getRandomInt(max: number) {
-    return Math.floor(Math.random() * (max - 1));
+    const num = Math.floor(Math.random() * max);
+    if (num > max) {
+      return max;
+    }
+    return num;
   }
 
   public allCells(): Array<Cell> {
