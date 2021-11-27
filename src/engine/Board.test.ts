@@ -1,5 +1,5 @@
-import Board, { CellIndex } from "./Board";
-import Cell, { CellState } from "./Cell";
+import { Board, CellIndex } from "./Board";
+import { Cell, CellState } from "./Cell";
 
 test("create valid board", () => {
   let mines = 35;

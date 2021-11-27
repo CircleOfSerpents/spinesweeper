@@ -1,5 +1,5 @@
-import Cell, { CellState } from "./Cell";
-import Game from "./Game";
+import { Cell, CellState } from "./Cell";
+import { Game } from "./Game";
 import { GameState } from "./GameState";
 
 test("create valid game", () => {
