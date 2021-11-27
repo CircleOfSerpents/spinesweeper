@@ -1,5 +1,6 @@
 /** @format */
-import express from "express";
+import * as express from "express";
+import * as path from "path";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { CellIndex } from "../engine/Board";
@@ -7,8 +8,9 @@ import { Game } from "../engine/Game";
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.use("/static", express.static(path.join(__dirname, "public", "static")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 let port = process.env.PORT;

@@ -21,7 +21,7 @@
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "build",
-    "downlevelIteration": true
+    "downlevelIteration": true,
   },
   "include": [
     "src"

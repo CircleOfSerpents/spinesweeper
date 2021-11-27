@@ -1,14 +1,14 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-      "outDir": "../../dist",
-      "noEmit": false,
-      "sourceMap": true,
-      "module": "commonjs",
-      "strict": true,
-      "target": "esnext",
-      "moduleResolution": "node"
-    },
-    "exclude": ["../../build", "../client"],
-    "include": ["."]
-  }
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist",
+    "noEmit": false,
+    "sourceMap": true,
+    "module": "commonjs",
+    "strict": true,
+    "target": "esnext",
+    "moduleResolution": "node"
+  },
+  "exclude": ["../../build", "../client"],
+  "include": ["."]
+}
