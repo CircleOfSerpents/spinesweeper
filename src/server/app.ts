@@ -16,11 +16,7 @@ if (port == null || port == "") {
   port = "3001";
 }
 const server = createServer(app).listen(port);
-const io = new Server(server, {
-  // cors: {
-  //   methods: ["GET", "POST"],
-  // },
-});
+const io = new Server(server);
 
 let clientCounter = 0;
 let sharedCounter = 0;
