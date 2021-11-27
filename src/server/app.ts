@@ -6,22 +6,20 @@ import { CellIndex } from "../engine/Board";
 import { Game } from "../engine/Game";
 
 const app = express();
-const port = 3001;
-
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = "3001";
+}
+const server = createServer(app).listen(port);
+const io = new Server(server, {
+  // cors: {
+  //   methods: ["GET", "POST"],
+  // },
 });
 
 let clientCounter = 0;
@@ -75,4 +73,4 @@ io.on("connection", (socket) => {
   });
 });
 
-io.listen(3002);
+// io.listen(3002);

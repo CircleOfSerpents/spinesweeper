@@ -16,7 +16,7 @@ function App() {
   const socket = useRef<Socket>();
 
   useEffect(() => {
-    socket.current = io("http://localhost:3002");
+    socket.current = io();
     socket.current.on("setGame", (game) => {
       setGame(deserializeGame(game));
     });
